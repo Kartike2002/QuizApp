@@ -1,106 +1,118 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
-import { useUser } from "../context/UserContext";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
-  const { setUser } = useUser();
-
-  // Redirect if already logged in
+  // If already logged in, go to quiz dashboard
   useEffect(() => {
-    const token = localStorage.getItem("access");
-    if (token) navigate("/home");
+    const user = localStorage.getItem("registeredUser");
+    if (user) {
+      navigate("/quiz");
+    }
   }, [navigate]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    try {
-      // ⭐ Login API call
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/auth/login/",
-        { username, password }
-      );
+    const storedUser = JSON.parse(
+      localStorage.getItem("registeredUser")
+    );
 
-      // ⭐ Store JWT tokens
-      localStorage.setItem("access", response.data.access);
-      localStorage.setItem("refresh", response.data.refresh);
-
-      // ⭐ Store username
-      localStorage.setItem("username", username);
-
-      // ⭐ Store user role
-      localStorage.setItem("role", response.data.role);
-
-      // ⭐ Update UserContext
-      setUser({ username, role: response.data.role });
-
-      // ⭐ Redirect user
-      if (response.data.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/home");
-      }
-
-    } catch (err) {
-      console.error(err);
-      setError("Invalid username or password");
-    } finally {
+    if (!storedUser) {
+      setError("No account found. Please sign up first.");
       setLoading(false);
+      return;
     }
+
+    if (
+      email !== storedUser.email ||
+      password !== storedUser.password
+    ) {
+      setError("Invalid email or password");
+      setLoading(false);
+      return;
+    }
+
+    // Login success
+    localStorage.setItem("loggedInUser", storedUser.email);
+
+    setLoading(false);
+    navigate("/quiz");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-blue-600 text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center
+                    bg-gray-100 dark:bg-gray-900 px-4">
+
+      <div className="bg-white dark:bg-gray-800
+                      shadow-xl rounded-2xl p-8 w-full max-w-md">
+
+        <h1 className="text-3xl font-extrabold text-center mb-6
+                       text-gray-900 dark:text-gray-100">
           Welcome Back 👋
         </h1>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-100 text-red-700 p-2 rounded-md text-center">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className="bg-red-100 text-red-700
+                          dark:bg-red-900 dark:text-red-200
+                          p-2 rounded mb-4 text-center">
+            {error}
+          </div>
+        )}
 
+        <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Email */}
           <div>
-            <label className="block text-gray-700 mb-1">Username</label>
+            <label className="block mb-1 font-medium
+                               text-gray-800 dark:text-gray-200">
+              Email
+            </label>
             <input
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-              required
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full px-3 py-2 rounded-lg border
+                         bg-white text-gray-900
+                         placeholder-gray-500
+                         focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
+          {/* Password */}
           <div className="relative">
-            <label className="block text-gray-700 mb-1">Password</label>
+            <label className="block mb-1 font-medium
+                               text-gray-800 dark:text-gray-200">
+              Password
+            </label>
+
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-              required
+              placeholder="••••••••"
+              className="w-full px-3 py-2 rounded-lg border
+                         bg-white text-gray-900
+                         placeholder-gray-500
+                         focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-9
+                         text-gray-500 hover:text-gray-700"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
@@ -109,19 +121,24 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full font-semibold py-2 rounded-lg transition ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
+            className={`w-full py-2 rounded-lg font-bold transition
+              ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <p className="text-center mt-4 text-gray-600">
+        <p className="text-center mt-4
+                      text-gray-600 dark:text-gray-400">
           Don’t have an account?{" "}
-          <Link to="/signup" className="text-blue-600 hover:underline">
+          <Link
+            to="/signup"
+            className="text-blue-600 dark:text-blue-400 font-semibold"
+          >
             Sign up
           </Link>
         </p>

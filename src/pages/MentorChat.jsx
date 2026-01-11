@@ -1,81 +1,91 @@
 import { useState } from "react";
-import axios from "axios";
 import { Send } from "lucide-react";
+import { MENTOR_ANSWERS } from "../Data/mentorAnswers";
 
 export default function MentorChat() {
   const [messages, setMessages] = useState([
     {
       sender: "bot",
-      text: "👋 Hi! I’m CodeBrainey AI, your coding mentor. How can I help you prepare for placements today?",
+      text: "👋 Hi! I’m CodeBrainey Mentor. How can I help you today?",
     },
   ]);
   const [input, setInput] = useState("");
 
-  const sendMessage = async () => {
+  const getMentorReply = (text) => {
+    const lower = text.toLowerCase();
+    const match = MENTOR_ANSWERS.find((item) =>
+      item.keywords.some((k) => lower.includes(k))
+    );
+
+    return (
+      match?.reply ||
+      "🤔 I’m not sure about that. Try asking about HTML, CSS, JavaScript, React, DSA, or placements."
+    );
+  };
+
+  const sendMessage = () => {
     if (!input.trim()) return;
 
-    const userMessage = { sender: "user", text: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const userMsg = { sender: "user", text: input };
+    const botMsg = { sender: "bot", text: getMentorReply(input) };
+
+    setMessages((prev) => [...prev, userMsg, botMsg]);
     setInput("");
-
-    try {
-      const res = await axios.post("http://127.0.0.1:8000/api/mentor/ask/", {
-        message: userMessage.text,
-      });
-
-      const botMessage = { sender: "bot", text: res.data.reply };
-      setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error(error);
-      const botMessage = {
-        sender: "bot",
-        text: "⚠️ Error connecting to server. Please try again.",
-      };
-      setMessages((prev) => [...prev, botMessage]);
-    }
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="h-screen bg-gradient-to-br from-[#0F172A] to-[#020617] flex flex-col">
+      
       {/* Header */}
-      <div className="p-4 bg-blue-600 text-white text-xl font-bold">
-        CodeBrainey AI Mentor
+      <div className="p-4 border-b border-gray-700 text-white text-xl font-bold text-center">
+        🤖 CodeBrainey Mentor
       </div>
 
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, idx) => (
+      {/* Chat Area */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 max-w-4xl mx-auto w-full">
+        {messages.map((msg, i) => (
           <div
-            key={idx}
-            className={`p-3 rounded-lg max-w-xl ${
-              msg.sender === "user"
-                ? "bg-blue-500 text-white self-end ml-auto"
-                : "bg-white text-gray-900"
+            key={i}
+            className={`flex ${
+              msg.sender === "user" ? "justify-end" : "justify-start"
             }`}
           >
-            {msg.text}
+            <div
+              className={`px-4 py-3 rounded-2xl max-w-[70%] text-sm md:text-base leading-relaxed shadow
+                ${
+                  msg.sender === "user"
+                    ? "bg-blue-600 text-white rounded-br-none"
+                    : "bg-gray-800 text-gray-100 rounded-bl-none"
+                }
+              `}
+            >
+              {msg.text}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Input Section */}
-      <div className="p-4 bg-white flex items-center gap-2 border-t">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1 p-3 rounded-lg border border-gray-300 
-                     text-black! font-bold placeholder-gray-500 bg-white
-                     focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      {/* Input Bar */}
+      <div className="border-t border-gray-700 p-4 bg-[#020617]">
+        <div className="flex max-w-4xl mx-auto gap-2">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask your coding doubt..."
+            className="flex-1 px-4 py-3 rounded-xl bg-gray-900 text-white
+                       border border-gray-700 focus:outline-none
+                       focus:ring-2 focus:ring-blue-500"
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          />
 
-        <button
-          onClick={sendMessage}
-          className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Send size={20} />
-        </button>
+          <button
+            onClick={sendMessage}
+            className="bg-blue-600 hover:bg-blue-700 text-white
+                       px-4 py-3 rounded-xl transition"
+          >
+            <Send size={20} />
+          </button>
+        </div>
       </div>
     </div>
   );

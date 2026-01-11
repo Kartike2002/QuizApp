@@ -1,22 +1,22 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Home from "./pages/Home";
-import Leaderboard from "./pages/Leaderboard";
-import MentorChat from "./pages/MentorChat";
-import CodingPractice from "./pages/CodingPractice";
+
 import QuizDashboard from "./pages/QuizDashboard";
-import Profile from "./pages/Profile";
-import Quiz from "./pages/Quiz";
+import TopicQuizPage from "./pages/TopicQuizPage";
+import CodingPractice from "./pages/CodingPractice";
 import CategoryPage from "./pages/CategoryPage";
 import ProblemPage from "./pages/ProblemPage";
+import Leaderboard from "./pages/Leaderboard";
+import MentorChat from "./pages/MentorChat";
+import Profile from "./pages/Profile";
 
-import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
-import TopicQuizPage from "./pages/TopicQuizPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-// ADMIN PAGES
+// ADMIN
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminQuestions from "./pages/AdminQuestions";
 import CreateQuestion from "./pages/CreateQuestion";
@@ -25,24 +25,99 @@ import AdminRoute from "./components/AdminRoute";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900
+                    text-gray-900 dark:text-gray-100">
       <Router>
         <Routes>
 
-          {/* Default Route */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
-          {/* Public Routes */}
+          {/* 🌍 PUBLIC ROUTES */}
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* Topic Quiz */}
+          {/* 🔐 USER ROUTES */}
+          <Route
+            path="/quiz"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <QuizDashboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/quiz/topic/:topic"
             element={
               <ProtectedRoute>
                 <Layout>
                   <TopicQuizPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/coding-practice"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CodingPractice />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/coding-practice/category/:name"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <CategoryPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ SINGLE Problem Page Route */}
+          <Route
+            path="/coding-practice/problem/:category/:id"
+            element={
+              <Layout>
+                <ProblemPage />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/leaderboard"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Leaderboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/mentor-chat"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <MentorChat />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Profile />
                 </Layout>
               </ProtectedRoute>
             }
@@ -84,117 +159,18 @@ export default function App() {
               </AdminRoute>
             }
           />
-
-          {/* Home */}
           <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Home />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+  path="/"
+  element={
+    <Layout>
+      <Home />
+    </Layout>
+  }
+/>
 
-          {/* Quiz Dashboard */}
-          <Route
-            path="/quiz"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <QuizDashboard />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
 
-          {/* Quiz Gameplay */}
-          <Route
-            path="/quiz/start"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Quiz />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Profile */}
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Profile />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Leaderboard */}
-          <Route
-            path="/leaderboard"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Leaderboard />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Mentor Chat */}
-          <Route
-            path="/mentor-chat"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <MentorChat />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Coding Practice */}
-          <Route
-            path="/coding-practice"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <CodingPractice />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Category Page */}
-          <Route
-            path="/coding-practice/category/:name"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <CategoryPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Problem Page */}
-          <Route
-            path="/coding-practice/problem/:slug"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <ProblemPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          {/* ❓ UNKNOWN ROUTES */}
+          <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>
       </Router>

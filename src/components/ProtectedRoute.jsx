@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 export default function ProtectedRoute({ children }) {
-  const [isAuth, setIsAuth] = useState(null);
+  const user = localStorage.getItem("registeredUser");
 
-  useEffect(() => {
-    const token = localStorage.getItem("access");
-    setIsAuth(!!token);
-  }, []);
+  // If user is not logged in
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-  if (isAuth === null) return <div>Loading...</div>;
-
-  return isAuth ? children : <Navigate to="/login" replace />;
+  // If logged in, allow access
+  return children;
 }

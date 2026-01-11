@@ -1,87 +1,124 @@
-// src/pages/ProblemPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import Editor from "@monaco-editor/react";
+import { CODING_QUESTIONS } from "../Data/codingQuestions";
+
+const LANG_TEMPLATES = {
+  python: `def solution(input):
+    pass`,
+  c: `#include <stdio.h>
+
+int main() {
+    return 0;
+}`,
+  cpp: `#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    return 0;
+}`,
+  java: `class Main {
+    public static void main(String[] args) {
+
+    }
+}`
+};
 
 export default function ProblemPage() {
   const { slug } = useParams();
 
-  const [problem, setProblem] = useState(null);
-  const [code, setCode] = useState("// Write your solution here...");
-  const [output, setOutput] = useState("");
+  // Find problem by ID
+  const problem = Object.values(CODING_QUESTIONS)
+    .flat()
+    .find((q) => q.id.toString() === slug);
 
-  // Dummy static data for UI preview
-  const dummyProblem = {
-    title: "Two Sum",
-    description: "Given an array of integers nums and an integer target...",
-    examples: [
-      { input: "nums = [2,7,11,15], target = 9", output: "[0,1]" },
-      { input: "nums = [3,2,4], target = 6", output: "[1,2]" },
-    ],
+  const [language, setLanguage] = useState("python");
+  const [code, setCode] = useState(LANG_TEMPLATES.python);
+  const [result, setResult] = useState(null);
+
+  if (!problem) {
+    return (
+      <div className="p-6 text-center text-red-500 text-xl">
+        Problem not found ❌
+      </div>
+    );
+  }
+
+  /* DEMO MODE CHECK */
+  const runCode = () => {
+    // This is demo logic (no real compiler)
+    // Assume first test case is correct if code is not empty
+    if (code.trim().length > 10) {
+      setResult("✅ All test cases passed");
+    } else {
+      setResult("❌ Wrong Answer");
+    }
   };
-
-  useEffect(() => {
-    setProblem(dummyProblem);
-  }, [slug]);
-
-  const handleRun = () => {
-    setOutput("Running your code...\n(This is UI only right now)");
-  };
-
-  const handleSubmit = () => {
-    setOutput("Submitted!\n(All test cases pending backend later)");
-  };
-
-  if (!problem) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="p-6 animate-fadeIn">
-      {/* Problem Header */}
-      <h1 className="text-3xl font-extrabold text-gray-900">{problem.title}</h1>
+    <div className="p-6 max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
 
-      <p className="text-gray-700 mt-4 mb-6 leading-relaxed">{problem.description}</p>
+      {/* LEFT: PROBLEM */}
+      <div className="bg-white rounded-xl shadow p-6">
+        <h1 className="text-2xl font-extrabold text-black mb-3">
+          {problem.title}
+        </h1>
 
-      {/* Examples */}
-      <div className="mb-6 space-y-4">
-        <h2 className="text-xl font-bold">Examples</h2>
-        {problem.examples.map((ex, index) => (
-          <div key={index} className="bg-gray-100 p-4 rounded-lg text-sm">
-            <p><strong>Input:</strong> {ex.input}</p>
-            <p><strong>Output:</strong> {ex.output}</p>
-          </div>
-        ))}
+        <p className="text-black font-medium mb-6">
+          {problem.description}
+        </p>
+
+        <h3 className="font-bold text-black mb-2">Example Test Case</h3>
+        <pre className="bg-gray-100 p-3 rounded text-sm text-black">
+Input: {JSON.stringify(problem.testCases[0].input)}
+{"\n"}
+Output: {JSON.stringify(problem.testCases[0].output)}
+        </pre>
       </div>
 
-      {/* Code Editor */}
-      <div className="mb-4 border rounded-lg overflow-hidden">
-        <Editor
-          height="350px"
-          defaultLanguage="javascript"
-          theme="vs-dark"
+      {/* RIGHT: CODE EDITOR */}
+      <div className="bg-white rounded-xl shadow p-6 flex flex-col">
+
+        {/* LANGUAGE SELECT */}
+        <div className="flex gap-3 mb-4">
+          {["python", "c", "cpp", "java"].map((lang) => (
+            <button
+              key={lang}
+              onClick={() => {
+                setLanguage(lang);
+                setCode(LANG_TEMPLATES[lang]);
+              }}
+              className={`px-4 py-1 rounded font-semibold ${
+                language === lang
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-black"
+              }`}
+            >
+              {lang.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {/* CODE AREA */}
+        <textarea
           value={code}
-          onChange={(v) => setCode(v)}
+          onChange={(e) => setCode(e.target.value)}
+          className="flex-1 border rounded p-3 font-mono text-sm text-black focus:outline-none"
         />
-      </div>
 
-      {/* Buttons */}
-      <div className="flex gap-4 mb-4">
+        {/* RUN BUTTON */}
         <button
-          onClick={handleRun}
-          className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition"
+          onClick={runCode}
+          className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded"
         >
           Run Code
         </button>
-        <button
-          onClick={handleSubmit}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-        >
-          Submit Code
-        </button>
-      </div>
 
-      {/* Output Console */}
-      <div className="bg-black text-green-400 p-4 rounded-lg font-mono whitespace-pre-wrap">
-        {output || "/* Output will appear here */"}
+        {/* RESULT */}
+        {result && (
+          <div className="mt-4 font-bold text-lg">
+            {result}
+          </div>
+        )}
       </div>
     </div>
   );

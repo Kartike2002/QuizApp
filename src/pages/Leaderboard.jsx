@@ -1,49 +1,89 @@
 import React, { useEffect, useState } from "react";
-import { getLeaderboard } from "../utils/leaderboardUtils";
+import { LEADERBOARD_DATA } from "../Data/leaderboardDemo";
 
 export default function Leaderboard() {
   const [data, setData] = useState([]);
 
+  // current user (demo)
+  const currentUser =
+    localStorage.getItem("username") || "Aditya";
+
   useEffect(() => {
-    setData(getLeaderboard());
+    const sorted = [...LEADERBOARD_DATA].sort(
+      (a, b) => b.score - a.score
+    );
+    setData(sorted);
   }, []);
 
-  if (data.length === 0) {
-    return (
-      <div className="p-6 text-center text-gray-500">
-        No leaderboard data yet
-      </div>
-    );
-  }
+  const getMedal = (rank) => {
+    if (rank === 1) return "🥇";
+    if (rank === 2) return "🥈";
+    if (rank === 3) return "🥉";
+    return rank;
+  };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto text-gray-900">
-      <h1 className="text-3xl font-bold mb-6 text-center">🏆 Leaderboard</h1>
+    <div className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-extrabold mb-6 text-center">
+        🏆 Leaderboard (Demo)
+      </h1>
 
-      <table className="w-full border border-gray-300 rounded">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="p-2">Rank</th>
-            <th className="p-2">User</th>
-            <th className="p-2">Topic</th>
-            <th className="p-2">Score</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {data.map((item, i) => (
-            <tr key={item.id ?? i} className="text-center border-t">
-              <td className="p-2 font-bold">{i + 1}</td>
-              <td className="p-2">{item.username}</td>
-              <td className="p-2">{item.topic}</td>
-              <td className="p-2 font-semibold">
-                {item.score}
-                {item.total ? ` / ${item.total}` : ""}
-              </td>
+      <div className="overflow-x-auto rounded-xl shadow-lg">
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-200 dark:bg-gray-800">
+            <tr>
+              <th className="p-3 text-center">Rank</th>
+              <th className="p-3 text-left">User</th>
+              <th className="p-3 text-center">Topic</th>
+              <th className="p-3 text-center">Score</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {data.map((item, index) => {
+              const isCurrentUser =
+                item.username === currentUser;
+
+              return (
+                <tr
+                  key={index}
+                  className={`
+                    border-t
+                    ${
+                      isCurrentUser
+                        ? "bg-blue-100 dark:bg-blue-900 font-bold"
+                        : "bg-white dark:bg-gray-900"
+                    }
+                    hover:bg-gray-100 dark:hover:bg-gray-800
+                    transition
+                  `}
+                >
+                  <td className="p-3 text-center text-xl">
+                    {getMedal(index + 1)}
+                  </td>
+
+                  <td className="p-3">
+                    {item.username}
+                    {isCurrentUser && (
+                      <span className="ml-2 text-sm text-blue-600">
+                        (You)
+                      </span>
+                    )}
+                  </td>
+
+                  <td className="p-3 text-center">
+                    {item.topic}
+                  </td>
+
+                  <td className="p-3 text-center text-blue-600 font-bold">
+                    {item.score}/10
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
