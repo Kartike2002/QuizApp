@@ -67,7 +67,7 @@ See the code for more details and specific components.
 Feel free to open issues or PRs. For changes to UI or routing, keep components modular and update the relevant page in `src/pages`.
 
 ## Live Link 
-"https://todo-list-react-fr2o.vercel.app"
+`https://todo-list-react-fr2o.vercel.app`
 
 
 
