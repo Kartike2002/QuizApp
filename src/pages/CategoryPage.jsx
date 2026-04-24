@@ -18,7 +18,7 @@ export default function CategoryPage() {
         {problems.map((q, index) => (
           <Link
             key={q.id}
-            to={`/coding-practice/problem/${q.id}`}
+            to={`/coding-practice/problem/${name}/${q.id}`}
             className="block"
           >
             <div className="bg-white rounded-xl shadow hover:shadow-lg transition p-5">

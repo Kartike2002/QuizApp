@@ -24,12 +24,11 @@ int main() {
 };
 
 export default function ProblemPage() {
-  const { slug } = useParams();
+  const { id, category = [] } = useParams();
 
   // Find problem by ID
-  const problem = Object.values(CODING_QUESTIONS)
-    .flat()
-    .find((q) => q.id.toString() === slug);
+  const problem = CODING_QUESTIONS[category]
+    .find((q) => q.id.toString() === id);
 
   const [language, setLanguage] = useState("python");
   const [code, setCode] = useState(LANG_TEMPLATES.python);
